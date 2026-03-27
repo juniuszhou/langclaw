@@ -1,0 +1,35 @@
+[project]
+name = "langclaw"
+version = "0.1.0"
+description = "OpenCLaw-equivalent AI agent platform built on LangGraph"
+requires-python = ">=3.12"
+dependencies = [
+    "langgraph>=0.2.0",
+    "langgraph-checkpoint>=2.0.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-anthropic>=0.2.0",
+    "langchain-google-genai>=2.0.0",
+    "langchain-community>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp", "langchain-mcp-adapters"]
+telegram = ["python-telegram-bot>=21.0"]
+rag = ["faiss-cpu>=1.8.0", "pypdf>=4.0"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

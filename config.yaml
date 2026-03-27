@@ -1,0 +1,49 @@
+# LangClaw agent configuration (OpenCLaw-compatible style)
+
+agents:
+  default:
+    model: ollama/llama3.2:3b
+    system_prompt: |
+      You are a helpful AI assistant. Use the available tools when needed to
+      answer questions. Think step by step.
+    channels:
+      - terminal
+      # Enable telegram to run the bot from the same entrypoint (run.py)
+      - telegram
+    memory:
+      backend: memory
+    tools:
+      - calculator
+      - get_current_time
+      - read_file
+      - write_file
+      - shell
+      - send_email
+      - calendar_add
+      - calendar_list
+    skills:
+      - example
+    max_turns: 50
+    temperature: 0.7
+
+    # Auto-inject RAG (requires: pip install -e ".[rag]" and a running embedder, e.g. ollama pull nomic-embed-text)
+    # rag:
+    #   enabled: true
+    #   sources: [rag_fixtures]
+    #   embedding_model: ollama/nomic-embed-text
+    #   chunk_size: 800
+    #   chunk_overlap: 120
+    #   k: 4
+    #   persist_directory: .rag_index
+    #   include_pdf: false
+
+  # Example with MCP (Firecrawl) - requires: pip install mcp langchain-mcp-adapters
+  # web-agent:
+  #   model: openai/gpt-4o-mini
+  #   system_prompt: "You can scrape and search the web."
+  #   tools: [calculator, read_file, web_search]
+  #   mcp:
+  #     server: npx
+  #     args: [firecrawl-mcp]
+  #     env:
+  #       FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}
