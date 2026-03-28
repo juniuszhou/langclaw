@@ -16,7 +16,7 @@ import contextlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-
+from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 
 from langclaw.memory import SqliteMemory
@@ -30,6 +30,7 @@ class TelegramAdapter:
     memory_db: Path = Path("langclaw.sqlite")
 
     def __post_init__(self) -> None:
+        load_dotenv()
         if not self.token:
             self.token = os.getenv("TELEGRAM_BOT_TOKEN", "")
         if not self.token:
