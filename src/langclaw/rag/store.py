@@ -1,15 +1,17 @@
 """Build FAISS vector store and retriever from local sources."""
 
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
+import importlib
 from pathlib import Path
-from typing import List
-
-from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from typing import Any, List
 
 from langclaw.config.loader import RAGConfig
 from langclaw.rag.embeddings import get_embeddings
+from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 
 _RAG_INSTALL_HINT = (
     "RAG requires optional dependencies. Install with: pip install -e '.[rag]'"
@@ -18,25 +20,17 @@ _RAG_INSTALL_HINT = (
 
 def _require_faiss():
     try:
-        from langchain_community.vectorstores import FAISS  # noqa: F401
+        importlib.import_module("langchain_community.vectorstores")
     except ImportError as e:
         raise ImportError(_RAG_INSTALL_HINT) from e
 
 
-def _load_file(path: Path, include_pdf: bool) -> List[Document]:
+def _load_file(path: Path, include_pdf: bool) -> List[Any]:
     suffix = path.suffix.lower()
     if suffix in (".md", ".txt"):
-        from langchain_community.document_loaders import TextLoader
-
         loader = TextLoader(str(path), encoding="utf-8")
         return loader.load()
     if suffix == ".pdf" and include_pdf:
-        try:
-            from langchain_community.document_loaders import PyPDFLoader
-        except ImportError as e:
-            raise ImportError(
-                "PDF ingest needs pypdf. Install with: pip install -e '.[rag]'"
-            ) from e
         return PyPDFLoader(str(path)).load()
     return []
 
@@ -70,9 +64,9 @@ def load_documents(
     app_dir: Path,
     sources: List[str],
     include_pdf: bool,
-) -> List[Document]:
+) -> List[Any]:
     """Load documents from configured sources (files or directories)."""
-    docs: List[Document] = []
+    docs: List[Any] = []
     for path in _collect_paths(app_dir, sources, include_pdf):
         docs.extend(_load_file(path, include_pdf))
     return docs
@@ -81,7 +75,6 @@ def load_documents(
 def build_rag_retriever(cfg: RAGConfig, app_dir: Path):
     """Create a retriever over a FAISS index (load or build + optional persist)."""
     _require_faiss()
-    from langchain_community.vectorstores import FAISS
 
     if not cfg.sources:
         raise ValueError("RAG is enabled but rag.sources is empty.")

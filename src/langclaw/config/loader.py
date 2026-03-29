@@ -31,8 +31,8 @@ class RAGConfig(BaseModel):
         description="Paths relative to app dir (files or directories).",
     )
     embedding_model: str = Field(
-        default="ollama/nomic-embed-text",
-        description="Provider/model, e.g. ollama/nomic-embed-text, openai/text-embedding-3-small",
+        default="nomic-embed-text",
+        description="Provider/model, e.g. nomic-embed-text, openai/text-embedding-3-small",
     )
     chunk_size: int = 800
     chunk_overlap: int = 120
