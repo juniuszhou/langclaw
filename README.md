@@ -140,6 +140,7 @@ langclaw/
 
 the MCP is a tool
 the RAG is a tool
+
 retriever as a node, it will add the data from embedding db to system prompt
 
 vector size and how to measure the similarity of content.

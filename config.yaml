@@ -23,6 +23,15 @@ agents:
       - calendar_list
     skills:
       - example
+    rag:
+      enabled: true
+      sources: [rag_fixtures]
+      embedding_model: ollama/nomic-embed-text
+      chunk_size: 800
+      chunk_overlap: 120
+      k: 4
+      persist_directory: .rag_index
+      include_pdf: false
     max_turns: 50
     temperature: 0.7
 
