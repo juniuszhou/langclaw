@@ -1,5 +1,5 @@
 """Configuration loading from YAML."""
 
-from langclaw.config.loader import load_config, AgentConfig
+from langclaw.config.loader import A2APeerConfig, AgentConfig, load_config
 
-__all__ = ["load_config", "AgentConfig"]
+__all__ = ["A2APeerConfig", "AgentConfig", "load_config"]

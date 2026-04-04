@@ -1,12 +1,16 @@
 """Built-in tools for the agent."""
 
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from langchain_core.tools import tool
 
 from langclaw.memory.sqlite import SqliteMemory
+from langclaw.tools.a2a_client import a2a_send
 
 @tool
 def calculator(expression: str) -> str:
@@ -163,6 +167,67 @@ def shell(command: str, timeout_seconds: int = 30) -> str:
 
 
 @tool
+def telegram_send_message(message: str, chat_id: str = "") -> str:
+    """Send a Telegram message with this project's bot (Telegram Bot HTTP API).
+
+    Use when the user asks to notify someone on Telegram, push an update to a chat,
+    or send text from a terminal/CLI session. This is separate from replying inside
+    the Telegram app: replies are automatic; this tool actively sends a new message.
+
+    Requires TELEGRAM_BOT_TOKEN (same as the Telegram channel). If chat_id is empty,
+    TELEGRAM_DEFAULT_CHAT_ID is used—set it to your numeric chat id (shown by /start on the bot).
+
+    Args:
+        message: Plain text to send (max 4096 characters; longer text is truncated).
+        chat_id: Numeric Telegram chat id (user, group, or channel id). Omit to use env default.
+
+    Returns:
+        Confirmation or error message from the API.
+    """
+    import os
+
+    token = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
+    if not token:
+        return "Error: TELEGRAM_BOT_TOKEN is not set."
+
+    cid = (chat_id or os.getenv("TELEGRAM_DEFAULT_CHAT_ID") or "").strip()
+    if not cid:
+        return (
+            "Error: chat_id is empty and TELEGRAM_DEFAULT_CHAT_ID is not set. "
+            "Pass chat_id or set TELEGRAM_DEFAULT_CHAT_ID (see /start on the bot)."
+        )
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    body = json.dumps(
+        {"chat_id": cid, "text": message[:4096]},
+        ensure_ascii=False,
+    ).encode("utf-8")
+    req = Request(
+        url,
+        data=body,
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        method="POST",
+    )
+    try:
+        with urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode())
+    except HTTPError as e:
+        try:
+            err_body = e.read().decode()
+        except Exception:
+            err_body = str(e)
+        return f"Error: Telegram API HTTP {e.code}: {err_body}"
+    except URLError as e:
+        return f"Error: could not reach Telegram: {e.reason}"
+    except Exception as e:
+        return f"Error: {e}"
+
+    if not data.get("ok"):
+        return f"Error: {data.get('description', data)}"
+    return f"Message sent to chat_id {cid}."
+
+
+@tool
 def send_email(
     to: str,
     subject: str,
@@ -279,10 +344,12 @@ def memory_note_search(namespace: str, query: str, limit: int = 5, db_path: str 
 BUILTIN_TOOLS = [
     calculator,
     get_current_time,
+    a2a_send,
     web_search,
     read_file,
     write_file,
     shell,
+    telegram_send_message,
     send_email,
     calendar_add,
     calendar_list,

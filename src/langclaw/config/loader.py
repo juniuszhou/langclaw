@@ -22,6 +22,23 @@ class MCPConfig(BaseModel):
     env: dict = Field(default_factory=dict)
 
 
+class A2APeerConfig(BaseModel):
+    """Register a remote A2A agent as a named LangChain tool (see ``a2a_peers``)."""
+
+    tool_name: str = Field(
+        ...,
+        description="Stable tool name for the LLM, e.g. ask_research_agent",
+    )
+    base_url: str = Field(
+        ...,
+        description="Peer HTTP origin, e.g. http://127.0.0.1:9999",
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description="Optional tool description; default loads from agent card.",
+    )
+
+
 class RAGConfig(BaseModel):
     """Retrieval-augmented generation: local corpus + embeddings."""
 
@@ -57,6 +74,10 @@ class AgentConfig(BaseModel):
     tools: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)
     mcp: Optional[MCPConfig] = None
+    a2a_peers: List[A2APeerConfig] = Field(
+        default_factory=list,
+        description="A2A peers exposed as named tools (add each tool_name to tools:).",
+    )
     rag: Optional[RAGConfig] = None
     max_turns: int = 50
     temperature: float = 0.7

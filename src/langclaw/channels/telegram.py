@@ -58,8 +58,13 @@ class TelegramAdapter:
         mem.setup()
 
         async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+            chat = update.effective_chat.id if update.effective_chat else "?"
             await update.message.reply_text(
-                "LangClaw connected. Send a message and I will reply."
+                "LangClaw connected.\n\n"
+                f"Your chat_id: {chat}\n"
+                "To let the terminal/CLI agent send messages here, set in .env:\n"
+                f"TELEGRAM_DEFAULT_CHAT_ID={chat}\n\n"
+                "Send a message and I will reply."
             )
 
         async def on_message(

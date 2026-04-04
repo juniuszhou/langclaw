@@ -145,7 +145,10 @@ retriever as a node, it will add the data from embedding db to system prompt
 
 vector size and how to measure the similarity of content.
 
-telegram service is saparate process, you just use the LLM invoke to response message.
+telegram service is saparate process, you just use the LLM invoke to response message. it is defined as a channel like
+other channel like cli.
+
+telegram_send_message works as a tool, register then engine can send message out.
 
 ### Test
 

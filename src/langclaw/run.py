@@ -42,6 +42,7 @@ def _build_runtime(agent_name: str, config_path: Path):
     tools = get_tools(
         tool_names=agent_cfg.tools if agent_cfg.tools else None,
         mcp_config=mcp_config,
+        a2a_peers=agent_cfg.a2a_peers or None,
     )
 
     system_prompt = agent_cfg.system_prompt

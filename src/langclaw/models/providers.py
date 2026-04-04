@@ -4,7 +4,7 @@ import os
 from typing import Any, Optional
 
 from langchain_core.language_models import BaseChatModel
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 
 class ModelConfig(BaseModel):
@@ -32,16 +32,18 @@ class ModelProvider:
         model_name = parts[1] if len(parts) > 1 else config.model_id
 
         if provider == "ollama":
+            ollama_key = config.api_key or "ollama"
             return ChatOpenAI(
                 model=model_name,
                 temperature=config.temperature,
                 base_url=config.base_url or "http://localhost:11434/v1",
-                api_key=config.api_key or "ollama",
+                api_key=SecretStr(ollama_key),
             )
+        openai_key = config.api_key or os.getenv("OPENAI_API_KEY")
         return ChatOpenAI(
             model=model_name,
             temperature=config.temperature,
-            api_key=config.api_key or os.getenv("OPENAI_API_KEY"),
+            api_key=SecretStr(openai_key) if openai_key else None,
             base_url=config.base_url,
         )
 
@@ -55,10 +57,22 @@ class ModelProvider:
             if "/" in config.model_id
             else config.model_id
         )
+        anthropic_key = config.api_key or os.getenv("ANTHROPIC_API_KEY")
+        # ChatAnthropic exposes model/timeout/stop under Pydantic aliases model_name, timeout, stop;
+        # pyright matches those names. Prefer passing api_key as SecretStr like other LC models.
+        if anthropic_key:
+            return ChatAnthropic(
+                model_name=model_name,
+                temperature=config.temperature,
+                api_key=SecretStr(anthropic_key),
+                timeout=None,
+                stop=None,
+            )
         return ChatAnthropic(
-            model=model_name,
+            model_name=model_name,
             temperature=config.temperature,
-            api_key=config.api_key or os.getenv("ANTHROPIC_API_KEY"),
+            timeout=None,
+            stop=None,
         )
 
     @staticmethod

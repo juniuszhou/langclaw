@@ -20,7 +20,13 @@ dependencies = [
     "pypdf>=4.0",
     "mcp>=1.0",
     "langchain-mcp-adapters>=0.2.0,<1",
-    "langchain-ollama>=0.1.0",
+    "langchain-ollama>=0.2.1",
+]
+
+[project.optional-dependencies]
+a2a = [
+    "a2a-sdk[http-server]>=0.3.25",
+    "uvicorn[standard]>=0.32.0",
 ]
 
 [build-system]
@@ -33,4 +39,6 @@ where = ["src"]
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "a2a-sdk[http-server]>=0.3.25",
+    "uvicorn[standard]>=0.32.0",
 ]

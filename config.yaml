@@ -10,14 +10,17 @@ agents:
       - terminal
       # Enable telegram to run the bot from the same entrypoint (run.py)
       - telegram
+      telegram_chat_id: "388662653"
     memory:
       backend: memory
     tools:
       - calculator
       - get_current_time
+      - a2a_send
       - read_file
       - write_file
       - shell
+      - telegram_send_message
       - send_email
       - calendar_add
       - calendar_list
@@ -34,6 +37,12 @@ agents:
       include_pdf: false
     max_turns: 50
     temperature: 0.7
+
+    # Named A2A peers (each tool_name must appear in tools: above). Requires: pip install -e ".[a2a]"
+    # a2a_peers:
+    #   - tool_name: ask_local_a2a
+    #     base_url: http://127.0.0.1:9999
+    #     # description: optional override; default comes from agent card
 
     # Auto-inject RAG (requires: pip install -e ".[rag]" and a running embedder, e.g. ollama pull nomic-embed-text)
     # rag:
