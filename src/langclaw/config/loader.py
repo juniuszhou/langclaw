@@ -70,6 +70,10 @@ class AgentConfig(BaseModel):
     model: str = Field(description="Model ID, e.g. openai/gpt-4o, ollama/llama3")
     system_prompt: str = "You are a helpful AI assistant."
     channels: List[str] = Field(default_factory=lambda: ["terminal"])
+    telegram_chat_id: Optional[str] = Field(
+        default=None,
+        description="Optional default chat id for telegram_send_message (sets TELEGRAM_DEFAULT_CHAT_ID on startup).",
+    )
     memory: Optional[MemoryConfig] = None
     tools: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)

@@ -147,6 +147,10 @@ async def main_async(
 
     # Telegram channel
     if "telegram" in (agent_cfg.channels or []):
+        if agent_cfg.telegram_chat_id:
+            os.environ.setdefault(
+                "TELEGRAM_DEFAULT_CHAT_ID", str(agent_cfg.telegram_chat_id)
+            )
         from langclaw.channels.telegram import TelegramAdapter
 
         adapter = TelegramAdapter(token="", memory_db=memory_db)
