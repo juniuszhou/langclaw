@@ -72,7 +72,11 @@ class AgentConfig(BaseModel):
     channels: List[str] = Field(default_factory=lambda: ["terminal"])
     telegram_chat_id: Optional[str] = Field(
         default=None,
-        description="Optional default chat id for telegram_send_message (sets TELEGRAM_DEFAULT_CHAT_ID on startup).",
+        description=(
+            "Optional default chat id for the telegram_send_message tool. "
+            "When set, TELEGRAM_DEFAULT_CHAT_ID is applied as the agent loads "
+            "(_build_runtime); the telegram channel does not need to be enabled."
+        ),
     )
     memory: Optional[MemoryConfig] = None
     tools: List[str] = Field(default_factory=list)

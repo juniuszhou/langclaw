@@ -1,15 +1,18 @@
 """LangGraph-based agent runtime: ReAct loop with tools and checkpointer."""
 
-from typing import Annotated, Any, List, NotRequired, Optional, Sequence, TypedDict
+from typing import Annotated, Any, List, NotRequired, Optional, Sequence, TypedDict, cast
 
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.tools import BaseTool
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
+from langgraph.types import StreamMode
 
 
 class AgentState(TypedDict):
@@ -47,7 +50,7 @@ def create_agent_graph(
     system_prompt: str = "You are a helpful AI assistant. Use tools when needed to answer questions.",
     checkpointer: Optional[Any] = None,
     rag_retriever: Optional[BaseRetriever] = None,
-) -> StateGraph:
+) -> CompiledStateGraph[AgentState, None, AgentState, AgentState]:
     """Create a compiled LangGraph agent with ReAct loop.
 
     Args:
@@ -108,6 +111,7 @@ def create_agent_graph(
     graph.add_node("agent", agent_node)
     graph.add_node("tools", tool_node)
 
+    # start from rag node or agent node
     if rag_retriever is not None:
         graph.set_entry_point("retriever")
         graph.add_edge("retriever", "agent")
@@ -146,16 +150,22 @@ class AgentRuntime:
         config = config or {}
         if "configurable" not in config:
             config["configurable"] = {}
-        return self.graph.invoke(input, config=config)
+        return self.graph.invoke(
+            cast(AgentState, input), config=cast(RunnableConfig, config)
+        )
 
     def stream(
         self,
         input: dict,
         config: Optional[dict] = None,
-        stream_mode: str = "values",
+        stream_mode: StreamMode = "values",
     ):
         """Stream agent steps. Input: {"messages": [BaseMessage, ...]}."""
         config = config or {}
         if "configurable" not in config:
             config["configurable"] = {}
-        return self.graph.stream(input, config=config, stream_mode=stream_mode)
+        return self.graph.stream(
+            cast(AgentState, input),
+            config=cast(RunnableConfig, config),
+            stream_mode=stream_mode,
+        )

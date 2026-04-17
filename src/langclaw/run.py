@@ -33,6 +33,11 @@ def _build_runtime(agent_name: str, config_path: Path):
         sys.exit(1)
 
     agent_cfg = cfg.agents[agent_name]
+    if agent_cfg.telegram_chat_id:
+        os.environ.setdefault(
+            "TELEGRAM_DEFAULT_CHAT_ID", str(agent_cfg.telegram_chat_id)
+        )
+
     model = get_model(
         agent_cfg.model,
         temperature=agent_cfg.temperature,
@@ -147,10 +152,6 @@ async def main_async(
 
     # Telegram channel
     if "telegram" in (agent_cfg.channels or []):
-        if agent_cfg.telegram_chat_id:
-            os.environ.setdefault(
-                "TELEGRAM_DEFAULT_CHAT_ID", str(agent_cfg.telegram_chat_id)
-            )
         from langclaw.channels.telegram import TelegramAdapter
 
         adapter = TelegramAdapter(token="", memory_db=memory_db)
